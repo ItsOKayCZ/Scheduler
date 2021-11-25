@@ -1,25 +1,24 @@
 <template>
-  <v-sheet max-height="100%" height="100%">
-    <v-toolbar>
-      <v-toolbar-title>Calendar</v-toolbar-title>
+    <v-sheet max-height="100%" height="100%">
+        <v-toolbar>
+        <v-toolbar-title>Calendar</v-toolbar-title>
 
-      <v-spacer></v-spacer>
+        <v-spacer></v-spacer>
 
-      <v-btn text fab small>
-        <v-icon>mdi-chevron-left</v-icon>
-      </v-btn>
-      <v-btn text fab small>
-        <v-icon>mdi-chevron-right</v-icon>
-      </v-btn>
-    </v-toolbar>
+        <v-btn text fab small>
+            <v-icon>mdi-chevron-left</v-icon>
+        </v-btn>
+        <v-btn text fab small>
+            <v-icon>mdi-chevron-right</v-icon>
+        </v-btn>
+        </v-toolbar>
 
-    <v-sheet color='orange' height='calc(100% - 50px)'>
-
-    </v-sheet>
-        <!-- <v-calendar
-            :weekdays="[1, 2, 3, 4, 5, 6, 0]"
-            type="week"
-        ></v-calendar> -->
+        <v-sheet color='orange' max-height='calc(100% - 50px)' height='calc(100% - 50px)'>
+            <!-- <v-calendar
+                :weekdays="[1, 2, 3, 4, 5, 6, 0]"
+                type="week"
+            ></v-calendar> -->
+        </v-sheet>
     </v-sheet>
 </template>
 
