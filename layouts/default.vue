@@ -5,7 +5,7 @@
 		</v-main>
 
 
-		<v-bottom-navigation app :height='bottomNavigationHeight' grow>
+		<v-bottom-navigation app :height='bottomNavigationHeight' grow fixed>
 			<v-btn v-for='(item, index) in navigation' :key='index' :to='item.to'>
 				<span>{{ item.title }}</span>
 				<v-icon>{{ item.icon }}</v-icon>
@@ -54,10 +54,6 @@ html, body, #__nuxt, #__layout{
 
 html{
 	overflow: hidden;
-}
-body{
-	height: 100%;
-	position: fixed;
-	overflow-y: hidden;
+	overflow-y: auto;
 }
 </style>
