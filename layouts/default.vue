@@ -38,11 +38,6 @@ export default{
 			bottomNavigationHeight: 50
 		};
 	},
-	computed: {
-		fullPageWithoutBottomNavigation(){
-			return `calc(100% - ${this.bottomNavigationHeight}px)`;
-		}
-	}
 }
 </script>
 

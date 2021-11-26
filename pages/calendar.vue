@@ -1,43 +1,92 @@
 <template>
     <v-sheet max-height="100%" height="100%">
         <v-toolbar>
-			<v-toolbar-title>Calendar</v-toolbar-title>
+
+			<date-picker 
+				:date.sync='calendarDate'
+				:view-type='viewType'
+			/>
+			
+			<v-dialog v-model='settingsDialog'>
+				<template v-slot:activator='{ on, attrs }'>
+					<v-btn icon v-bind='attrs' v-on='on'>
+						<v-icon>mdi-cog</v-icon>
+					</v-btn>
+				</template>
+
+				<settings
+					:display.sync='settingsDialog'
+					:view-type.sync='viewType'
+				/>
+			</v-dialog>
 
 			<v-spacer></v-spacer>
 
-			<v-btn text fab small>
+			<v-dialog v-model='addEventDialog'>
+				<template v-slot:activator='{ on, attrs }'>
+					<v-btn class='mr-4' icon
+						v-bind='attrs' v-on='on'
+					>
+						<v-icon>mdi-plus</v-icon>
+					</v-btn>
+				</template>
+
+				<add-event-card
+					:display.sync='addEventDialog'
+
+					:add-event='addEvent'
+				/>
+			</v-dialog>
+
+			<v-btn icon
+				@click='$refs.calendar.prev()'
+			>
 				<v-icon>mdi-chevron-left</v-icon>
 			</v-btn>
-			<v-btn text fab small>
+			<v-btn icon
+				@click='$refs.calendar.next()'
+			>
 				<v-icon>mdi-chevron-right</v-icon>
 			</v-btn>
         </v-toolbar>
 
 		<div class='calendarContainer'>
 			<v-calendar
+				ref='calendar'
+				v-model='calendarDate'
 				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
-				type="week"
+				:type='viewType'
+				mode='column'
+				
+				:events='events'
 			></v-calendar>
 		</div>
     </v-sheet>
 </template>
 
 <script>
+import moment from 'moment';
+
+import settings from '../components/calendar/settings.vue';
+import datePicker from '../components/calendar/datePicker.vue';
+import addEventCard from '../components/calendar/addEventCard.vue';
+
 export default {
+	components: {
+		settings,
+		datePicker,
+		addEventCard
+	},
     data: () => ({
-        type: "month",
-        types: ["month", "week", "day", "4day"],
-        mode: "stack",
-        modes: ["stack", "column"],
-        weekday: [0, 1, 2, 3, 4, 5, 6],
-        weekdays: [
-			{ text: "Sun - Sat", value: [0, 1, 2, 3, 4, 5, 6] },
-			{ text: "Mon - Sun", value: [1, 2, 3, 4, 5, 6, 0] },
-			{ text: "Mon - Fri", value: [1, 2, 3, 4, 5] },
-			{ text: "Mon, Wed, Fri", value: [1, 3, 5] },
-        ],
-        value: "",
-        events: [],
+		settingsDialog: false,
+		viewTypes: ['month', 'week', 'day'],
+		viewType: 'week',
+		calendarDate: moment().format('YYYY-MM-DD'),
+
+		addEventDialog: false,
+		events: [
+		],
+
         colors: [
 			"blue",
 			"indigo",
@@ -58,40 +107,27 @@ export default {
 			"Party",
         ],
     }),
-    methods: {
-        getEvents({ start, end }) {
-			const events = [];
-
-			const min = new Date(`${start.date}T00:00:00`);
-			const max = new Date(`${end.date}T23:59:59`);
-			const days = (max.getTime() - min.getTime()) / 86400000;
-			const eventCount = this.rnd(days, days + 20);
-
-			for (let i = 0; i < eventCount; i++) {
-				const allDay = this.rnd(0, 3) === 0;
-				const firstTimestamp = this.rnd(min.getTime(), max.getTime());
-				const first = new Date(firstTimestamp - (firstTimestamp % 900000));
-				const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000;
-				const second = new Date(first.getTime() + secondTimestamp);
-
-				events.push({
-					name: this.names[this.rnd(0, this.names.length - 1)],
-					start: first,
-					end: second,
-					color: this.colors[this.rnd(0, this.colors.length - 1)],
-					timed: !allDay,
-				});
-			}
-
-			this.events = events;
-        },
-        getEventColor(event) {
-			return event.color;
-        },
-        rnd(a, b) {
-			return Math.floor((b - a + 1) * Math.random()) + a;
-        },
-    },
+	methods: {
+		addEvent(event){
+			this.events.push(event);
+			// this.events = [
+			// 	{
+			// 		name: 'All day event',
+			// 		start: moment().toDate(),
+			// 		end: moment().add(1, 'day').toDate(),
+			// 		color: 'orange',
+			// 		timed: false
+			// 	},
+			// 	{
+			// 		name: 'Timed event',
+			// 		start: moment().toDate(),
+			// 		end: moment().add(1, 'hour').toDate(),
+			// 		color: 'blue',
+			// 		timed: true
+			// 	},
+			// ];
+		}
+	}
 };
 </script>
 
@@ -100,5 +136,12 @@ export default {
 	height: calc(100vh - 56px - 50px);
 	max-height: calc(100vh - 56px - 50px);
 	background-color: red;
+}
+
+@media screen and (max-width: 700px){
+	.v-calendar-daily_head-day-label .v-btn{
+		width: 40px;
+		height: 40px;
+	}
 }
 </style>
