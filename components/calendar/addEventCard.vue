@@ -53,7 +53,31 @@
 							v-model='allDay'
 							label='All day'
 							inset
+
+							hide-details="true"
 						></v-switch>
+					</v-col>
+
+					<v-col cols='12' class='d-flex flex-row'>
+						<v-switch
+							v-model='repeat'
+							label='Repeat'
+							inset
+
+							class='mr-5'
+						></v-switch>
+
+						<v-text-field
+							type='number'
+							v-model='repeatAfter'
+							label='After'
+
+							:rules='[rules.positiveNumber]'
+
+							style='max-width: 150px;'
+
+							:disabled='!repeat'
+						></v-text-field>
 					</v-col>
 
 					<v-col cols='12'>
@@ -82,7 +106,7 @@
 										{{ data.item.title }}
 									</v-chip>
 
-									<v-btn @click.prevent='removeCategory(data.item.title)' x-small fab color='red'>
+									<v-btn @click.prevent='removeCategory(data.item)' x-small fab color='red'>
 										<v-icon>mdi-minus</v-icon>
 									</v-btn>
 								</div>
@@ -125,9 +149,13 @@ export default{
 			category: null,
 			allDay: false,
 
+			repeat: false,
+			repeatAfter: 0,
+
 			datePickerFormat: 'DD (ddd).MM.YYYY',
 			rules: {
 				required: value => !!value || 'Required',
+				positiveNumber: value => (!this.repeat || value > 0) || 'Number has to be bigger than 0'
 			},
 
 			isFormValid: false,
@@ -135,7 +163,7 @@ export default{
 	},
 	computed: {
 		categories(){
-			return this.$store.state.categories;
+			return this.$store.state.categories.data;
 		},
 
 		start(){
@@ -161,13 +189,15 @@ export default{
 				start: this.start.toDate(),
 				end: this.end.toDate(),
 				category: this.category,
-				timed: !this.allDay
+				timed: !this.allDay,
+				repeat: this.repeat,
+				repeatAfter: this.repeatAfter
 			});
 			this.close();
 		},
 
-		removeCategory(categoryTitle){
-			this.$store.commit('removeCategory', categoryTitle);
+		removeCategory(category){
+			this.$store.commit('categories/removeCategory', category);
 		}
 	},
 };

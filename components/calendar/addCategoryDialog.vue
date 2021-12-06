@@ -74,7 +74,7 @@ export default {
 		},
 
 		save(){
-			this.$store.commit('addCategory', {
+			this.$store.commit('categories/addCategory', {
 				title: this.name,
 				color: `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a})`
 			});
@@ -82,5 +82,12 @@ export default {
 			this.display = false;
 		},
 	},
+	watch: {
+		display(){
+			if(this.display){
+				this.generateColor();
+			}
+		}
+	}
 };
 </script>

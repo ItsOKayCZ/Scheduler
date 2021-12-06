@@ -19,7 +19,7 @@ export default {
   },
 
   server: {
-	host: '0'
+	host: '127.0.0.1'
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -59,7 +59,13 @@ export default {
     }
   },
 
-  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
+  serverMiddleware: [
+	'~/serverMiddleware/auth',
+	'~/serverMiddleware/events',
+	'~/serverMiddleware/categories',
+  ],
+
+  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify/
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     theme: {

@@ -50,15 +50,22 @@
 				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
 				:type="viewType"
 				mode="column"
-				:events="events"
+				:events="[...events, ...repeatingEvents]"
+
+				@click:event='selectEvent'
 			>
 				<template v-slot:event="data">
-					<v-sheet class='pl-1' :color='categories.find(c => c.title == data.event.category).color' event.width="100%" height="100%">
+					<v-sheet class='pl-1' :color='data.event.color' event.width="100%" height="100%">
 						<h3>{{ data.event.name }}</h3>
 						{{ data.eventParsed.start.time }} - {{ data.eventParsed.end.time }}
 					</v-sheet>
 				</template>
 			</v-calendar>
+
+			<event-menu
+				:event.sync='selectedEvent'
+				:activator='selectedEventDOM'
+			/>
 		</div>
 	</v-sheet>
 </template>
@@ -69,12 +76,14 @@ import moment from "moment";
 import settings from "../components/calendar/settings.vue";
 import datePicker from "../components/calendar/datePicker.vue";
 import addEventCard from "../components/calendar/addEventCard.vue";
+import eventMenu from '../components/calendar/eventMenu.vue';
 
 export default {
 	components: {
 		settings,
 		datePicker,
 		addEventCard,
+		eventMenu,
 	},
 	data: () => ({
 		settingsDialog: false,
@@ -83,16 +92,84 @@ export default {
 		calendarDate: moment().format("YYYY-MM-DD"),
 
 		addEventDialog: false,
-		events: [],
+
+		selectedEvent: null,
+		selectedEventDOM: null,
 	}),
 	computed: {
 		categories(){
-			return this.$store.state.categories;
+			return this.$store.state.categories.data;
+		},
+		events(){
+			const events = this.$store.state.events.data.map(e => {
+				if(!e.start || !e.end)
+					return null;
+
+				const category = this.categories.find(c => c.title == e.category);
+				if(!category)
+					return null;
+
+				return {
+					...e,
+					start: new Date(e.start),
+					end: new Date(e.end),
+					color: category.color
+				};
+			}).filter(e => e != null);
+
+			return events;
+		},
+		repeatingEvents(){
+			const events = [];
+			for(const e of this.events){
+				if(!e.repeat)
+					continue;
+
+				const start = moment(e.start);
+				const end = moment(e.end);
+
+				const selectedDate = moment(this.calendarDate, 'YYYY-MM-DD');
+
+				switch(this.viewType){
+					case 'week':
+						const endWeek = selectedDate.clone().endOf('week');
+						for(let day = selectedDate.clone().startOf('week'); day.isSameOrBefore(endWeek); day.add(1, 'day')){
+							const dayDiff = Math.ceil(moment.duration(day.diff(start)).asDays());
+							if(dayDiff == 0)
+								continue;
+
+							if(dayDiff % e.repeatAfter == 0){
+								const duration = end.diff(start, 'minute');
+
+								const modifiedStart = day.clone().set({
+									hours: start.hours(),
+									minutes: start.minutes()
+								});
+
+								events.push({
+									...e,
+									start: modifiedStart.toDate(),
+									end: modifiedStart.add(duration, 'minute').toDate(),
+								});
+							}
+						}
+						break;
+				}
+			}
+
+			return events;
 		},
 	},
 	methods: {
-		addEvent(event) {
-			this.events.push(event);
+		async addEvent(event) {
+			this.$store.commit('events/addEvent', event);
+		},
+
+		selectEvent({ nativeEvent, event }){
+			this.selectedEvent = event;
+			this.selectedEventDOM = nativeEvent.target;
+
+			nativeEvent.stopPropagation();
 		},
 	},
 };

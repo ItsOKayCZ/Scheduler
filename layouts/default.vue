@@ -17,6 +17,13 @@
 <script>
 import Vue from 'vue';
 
+import moment from 'moment';
+moment.updateLocale('en', {
+	week: {
+		dow: 1
+	}
+});
+
 export default{
 	data(){
 		return {
@@ -39,6 +46,10 @@ export default{
 			],
 			bottomNavigationHeight: 50
 		};
+	},
+	created(){
+		this.$store.dispatch('events/load');
+		this.$store.dispatch('categories/load');
 	},
 }
 </script>
