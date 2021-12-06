@@ -20,16 +20,6 @@ const eventSchema = new mongoose.Schema({
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 
 app.use(bodyParser.json());
-app.post('/api/getEvents', async (req, res) => {
-	console.log('[EVENTS] Sending');
-
-	const events = await Event.find();
-
-	res.status(200).json({
-		events
-	});
-});
-
 app.post('/api/createEvent', async (req, res) => {
 	const { body } = req;
 	if(!body){
@@ -54,5 +44,32 @@ app.post('/api/createEvent', async (req, res) => {
 		event
 	});
 });
+
+app.post('/api/removeEvent', async (req, res) => {
+	const event = req.body;
+	if(!event){
+		res.status(400).send();
+		return;
+	}
+	console.log(`[EVENTS] Deleting ${event._id}`);
+
+	await Event.deleteOne({ _id: event._id });
+	const events = await Event.find();
+
+	res.status(200).json({
+		events
+	});
+});
+
+app.post('/api/getEvents', async (req, res) => {
+	console.log('[EVENTS] Sending');
+
+	const events = await Event.find();
+
+	res.status(200).json({
+		events
+	});
+});
+
 
 module.exports = app;

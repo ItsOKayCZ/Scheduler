@@ -19,5 +19,8 @@ api.createEvent = async function(event){
 api.getEvents = async function(){
 	return await this.post('/api/getEvents');
 }
+api.removeEvent = async function(event){
+	return await this.post('/api/removeEvent', event);
+}
 
 export default api;

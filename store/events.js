@@ -10,6 +10,11 @@ export const mutations = {
 
 		this.commit('events/pushEvent', res.data.event);
 	},
+	async removeEvent(state, event){
+		const res = await api.removeEvent(event);
+
+		this.commit('events/setEvents', res.data.events);
+	},
 
 	pushEvent(state, event){
 		state.data.push(event);
