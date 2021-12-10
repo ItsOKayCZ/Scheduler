@@ -64,4 +64,10 @@ html{
 	overflow: hidden;
 	overflow-y: auto;
 }
+
+.v-item-group.v-bottom-navigation .v-btn{
+	max-width: initial;
+	max-height: initial;
+	height: 100%;
+}
 </style>
