@@ -1,4 +1,5 @@
 import axios from 'axios';
+const test;
 
 const api = axios.create({
 	baseURL: process.env._AXIOS_BASE_URL_
