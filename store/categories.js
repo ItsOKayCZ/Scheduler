@@ -10,14 +10,14 @@ export const mutations = {
 
 		this.commit('categories/pushCategory', res.data.category);
 	},
-	async removeCategory(state, category){ // TODO: Send ID of category to API
-		console.log(category);
+	async removeCategory(state, category){
+		const res = await api.removeCategory(category);
 
-		// state.data = state.data.filter(c => c.title != categoryTitle);
+		this.commit('categories/setCategories', res.data.categories);
 	},
 
 	pushCategory(state, category){
-		state.data.push(category); // TODO: Instead push event from respond with id
+		state.data.push(category);
 	},
 	setCategories(state, categories){
 		state.data = categories;

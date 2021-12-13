@@ -42,4 +42,19 @@ app.post('/api/createCategory', async (req, res) => {
 	});
 });
 
+app.post('/api/removeCategory', async (req, res) => {
+	const category = req.body;
+	if(!category){
+		res.status(400).send();
+		return;
+	}
+	console.log(`[CATEGORIES] Removing ${category._id}`);
+	await Category.deleteOne({ _id: category._id });
+	const categories = await Category.find();
+
+	res.status(200).json({
+		categories
+	});
+});
+
 module.exports = app;
