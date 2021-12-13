@@ -9,6 +9,8 @@
 				transition="scale-transition"
 				offset-y
 				v-model="datePickerDisplay"
+
+				max-width="300px"
 			>
 				<template v-slot:activator="{ on, attrs }">
 					<v-text-field
@@ -25,6 +27,9 @@
 				<v-date-picker
 					@input="datePickerDisplay = false"
 					v-model="formattedDateProxy"
+					:first-day-of-week="1"
+
+					full-width
 				>
 				</v-date-picker>
 			</v-menu>

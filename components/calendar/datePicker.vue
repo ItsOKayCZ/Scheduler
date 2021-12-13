@@ -3,6 +3,8 @@
 		transition="scale-transition"
 		offset-y
 		v-model='display'
+
+		max-width="300px"
 	>
 		<template v-slot:activator='{ on, attrs }'>
 			<v-text-field
@@ -20,6 +22,9 @@
 			@input='display = false'
 			v-model='dateProxy'
 			:show-current='currentDate'
+			:first-day-of-week="1"
+
+			full-width
 		>
 			<v-spacer></v-spacer>
 			<v-btn outlined
