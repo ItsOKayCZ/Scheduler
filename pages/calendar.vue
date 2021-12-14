@@ -1,6 +1,6 @@
 <template>
 	<v-sheet max-height="100%" height="100%">
-		<v-toolbar height='56px'>
+		<v-toolbar height="56px">
 			<date-picker :date.sync="calendarDate" :view-type="viewType" />
 
 			<v-dialog v-model="settingsDialog">
@@ -51,20 +51,28 @@
 				:type="viewType"
 				mode="column"
 				:events="[...events, ...repeatingEvents]"
-
-				@click:event='selectEvent'
+				@click:event="selectEvent"
 			>
 				<template v-slot:event="data">
-					<v-sheet class='pl-1' :color='data.event.color' event.width="100%" height="100%">
+					<v-sheet
+						class="pl-1 eventCard"
+						:class="{
+							blackText: contrastingColor(data.event.color)
+						}"
+						:color="data.event.color"
+						event.width="100%"
+						height="100%"
+					>
 						<h3>{{ data.event.name }}</h3>
-						{{ data.eventParsed.start.time }} - {{ data.eventParsed.end.time }}
+						{{ data.eventParsed.start.time }} -
+						{{ data.eventParsed.end.time }}
 					</v-sheet>
 				</template>
 			</v-calendar>
 
 			<event-menu
-				:event.sync='selectedEvent'
-				:activator='selectedEventDOM'
+				:event.sync="selectedEvent"
+				:activator="selectedEventDOM"
 			/>
 		</div>
 	</v-sheet>
@@ -76,7 +84,7 @@ import moment from "moment";
 import settings from "../components/calendar/settings.vue";
 import datePicker from "../components/calendar/datePicker.vue";
 import addEventCard from "../components/calendar/addEventCard.vue";
-import eventMenu from '../components/calendar/eventMenu.vue';
+import eventMenu from "../components/calendar/eventMenu.vue";
 
 export default {
 	components: {
@@ -97,59 +105,67 @@ export default {
 		selectedEventDOM: null,
 	}),
 	computed: {
-		categories(){
+		categories() {
 			return this.$store.state.categories.data;
 		},
-		events(){
-			const events = this.$store.state.events.data.map(e => {
-				if(!e.start || !e.end)
-					return null;
+		events() {
+			const events = this.$store.state.events.data
+				.map((e) => {
+					if (!e.start || !e.end) return null;
 
-				const category = this.categories.find(c => c.title == e.category);
-				if(!category)
-					return null;
+					const category = this.categories.find(
+						(c) => c.title == e.category
+					);
+					if (!category) return null;
 
-				return {
-					...e,
-					start: new Date(e.start),
-					end: new Date(e.end),
-					color: category.color
-				};
-			}).filter(e => e != null);
+					return {
+						...e,
+						start: new Date(e.start),
+						end: new Date(e.end),
+						color: category.color,
+					};
+				})
+				.filter((e) => e != null);
 
 			return events;
 		},
-		repeatingEvents(){
+		repeatingEvents() {
 			const events = [];
-			for(const e of this.events){
-				if(!e.repeat)
-					continue;
+			for (const e of this.events) {
+				if (!e.repeat) continue;
 
 				const start = moment(e.start);
 				const end = moment(e.end);
 
-				const selectedDate = moment(this.calendarDate, 'YYYY-MM-DD');
+				const selectedDate = moment(this.calendarDate, "YYYY-MM-DD");
 
-				switch(this.viewType){
-					case 'week':
-						const endWeek = selectedDate.clone().endOf('week');
-						for(let day = selectedDate.clone().startOf('week'); day.isSameOrBefore(endWeek); day.add(1, 'day')){
-							const dayDiff = Math.ceil(moment.duration(day.diff(start)).asDays());
-							if(dayDiff == 0)
-								continue;
+				switch (this.viewType) {
+					case "week":
+						const endWeek = selectedDate.clone().endOf("week");
+						for (
+							let day = selectedDate.clone().startOf("week");
+							day.isSameOrBefore(endWeek);
+							day.add(1, "day")
+						) {
+							const dayDiff = Math.ceil(
+								moment.duration(day.diff(start)).asDays()
+							);
+							if (dayDiff == 0) continue;
 
-							if(dayDiff % e.repeatAfter == 0){
-								const duration = end.diff(start, 'minute');
+							if (dayDiff % e.repeatAfter == 0) {
+								const duration = end.diff(start, "minute");
 
 								const modifiedStart = day.clone().set({
 									hours: start.hours(),
-									minutes: start.minutes()
+									minutes: start.minutes(),
 								});
 
 								events.push({
 									...e,
 									start: modifiedStart.toDate(),
-									end: modifiedStart.add(duration, 'minute').toDate(),
+									end: modifiedStart
+										.add(duration, "minute")
+										.toDate(),
 								});
 							}
 						}
@@ -162,14 +178,29 @@ export default {
 	},
 	methods: {
 		async addEvent(event) {
-			this.$store.commit('events/addEvent', event);
+			this.$store.commit("events/addEvent", event);
 		},
 
-		selectEvent({ nativeEvent, event }){
+		selectEvent({ nativeEvent, event }) {
 			this.selectedEvent = event;
 			this.selectedEventDOM = nativeEvent.target;
 
 			nativeEvent.stopPropagation();
+		},
+
+		contrastingColor(color){
+			return this.luma(color) >= 165;
+		},
+		luma(color){
+			let rgb = this.RGBAStringToArray(color);
+			console.log(rgb);
+			return (0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]); // SMPTE C, Rec. 709 weightings
+		},
+		RGBAStringToArray(color){
+			return color = color.slice(
+				color.indexOf('(') + 1,
+				color.indexOf(')')
+			).split(', ');
 		},
 	},
 };
@@ -179,7 +210,16 @@ export default {
 .calendarContainer {
 	height: calc(100vh - 56px - 50px);
 	max-height: calc(100vh - 56px - 50px);
-	background-color: red;
+}
+.eventCard {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+
+	border-radius: 5px;
+}
+.blackText {
+	color: black !important;
 }
 
 @media screen and (max-width: 700px) {

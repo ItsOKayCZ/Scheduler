@@ -22,8 +22,8 @@
 			</v-toolbar>
 
 			<v-card-text>
-					<p><strong>Start: </strong>{{ eventStart.format('DD.MM.YYYY') }}</p>
-					<p><strong>End: </strong>{{ eventEnd.format('DD.MM.YYYY') }}</p>
+					<p><strong>Start: </strong>{{ eventStart.format('DD.MM.YYYY HH:mm') }}</p>
+					<p><strong>End: </strong>{{ eventEnd.format('DD.MM.YYYY HH:mm') }}</p>
 					<p><strong>Repeat: </strong>{{ eventRepeat }}</p>
 					<p v-show='eventRepeat'><strong>After:</strong> {{ eventRepeatAfter }} day(s)</p>
 			</v-card-text>
