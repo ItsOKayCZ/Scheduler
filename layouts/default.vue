@@ -24,6 +24,9 @@ moment.updateLocale('en', {
 	}
 });
 
+import Mixin from '~/plugins/mixin';
+Vue.mixin(Mixin);
+
 export default{
 	data(){
 		return {

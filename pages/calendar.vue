@@ -31,7 +31,7 @@
 
 				<add-event-card
 					:display.sync="addEventDialog"
-					:add-event="addEvent"
+					@add='addEvent'
 				/>
 			</v-dialog>
 
@@ -57,7 +57,7 @@
 					<v-sheet
 						class="pl-1 eventCard"
 						:class="{
-							blackText: contrastingColor(data.event.color)
+							blackText: isContrastingColor(data.event.color)
 						}"
 						:color="data.event.color"
 						event.width="100%"
@@ -75,6 +75,15 @@
 				:activator="selectedEventDOM"
 			/>
 		</div>
+
+		<snackbar-event
+			:statement='addingEvents'
+			text='Adding event'
+		></snackbar-event>
+		<snackbar-event
+			:statement='removingEvents'
+			text='Removing event'
+		></snackbar-event>
 	</v-sheet>
 </template>
 
@@ -85,6 +94,7 @@ import settings from "../components/calendar/settings.vue";
 import datePicker from "../components/calendar/datePicker.vue";
 import addEventCard from "../components/calendar/addEventCard.vue";
 import eventMenu from "../components/calendar/eventMenu.vue";
+import snackbarEvent from '../components/SnackbarEvent.vue';
 
 export default {
 	components: {
@@ -92,6 +102,7 @@ export default {
 		datePicker,
 		addEventCard,
 		eventMenu,
+		snackbarEvent,
 	},
 	data: () => ({
 		settingsDialog: false,
@@ -128,6 +139,12 @@ export default {
 				.filter((e) => e != null);
 
 			return events;
+		},
+		addingEvents(){
+			return this.$store.state.events.adding;
+		},
+		removingEvents(){
+			return this.$store.state.events.removing;
 		},
 		repeatingEvents() {
 			const events = [];
@@ -186,21 +203,6 @@ export default {
 			this.selectedEventDOM = nativeEvent.target;
 
 			nativeEvent.stopPropagation();
-		},
-
-		contrastingColor(color){
-			return this.luma(color) >= 165;
-		},
-		luma(color){
-			let rgb = this.RGBAStringToArray(color);
-			console.log(rgb);
-			return (0.2126 * rgb[0]) + (0.7152 * rgb[1]) + (0.0722 * rgb[2]); // SMPTE C, Rec. 709 weightings
-		},
-		RGBAStringToArray(color){
-			return color = color.slice(
-				color.indexOf('(') + 1,
-				color.indexOf(')')
-			).split(', ');
 		},
 	},
 };

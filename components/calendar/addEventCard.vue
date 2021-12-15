@@ -134,7 +134,7 @@ import dateTimePicker from '../dateTimePicker.vue';
 import AddCategoryDialog from './addCategoryDialog.vue';
 
 export default{
-	props: ['display', 'addEvent'],
+	props: ['display'],
 	components: {
 		dateTimePicker,
 		AddCategoryDialog
@@ -184,7 +184,7 @@ export default{
 			this.$emit('update:display', false);
 		},
 		add(){
-			this.addEvent({
+			this.$emit('add', {
 				name: this.name,
 				start: this.start.toDate(),
 				end: this.end.toDate(),

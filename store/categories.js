@@ -1,4 +1,4 @@
-import api from "~/services/api";
+import api from "~/plugins/api";
 
 export const state = () => ({
 	data: []

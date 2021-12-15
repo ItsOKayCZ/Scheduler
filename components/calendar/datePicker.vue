@@ -8,13 +8,18 @@
 	>
 		<template v-slot:activator='{ on, attrs }'>
 			<v-text-field
-				label='Date'
+				label='Selected date'
 				:value='formattedDate'
 				v-bind='attrs'
 				v-on='on'
 				hide-details="true"
 				readonly
-				prepend-icon="mdi-calendar-search"
+				prepend-inner-icon="mdi-calendar-search"
+
+				style='max-width: 130px'
+
+				outlined
+				dense
 			></v-text-field>
 		</template>
 
