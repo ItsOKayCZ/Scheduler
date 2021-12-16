@@ -124,11 +124,22 @@
 				</v-row>
 			</v-form>
 		</v-card-text>
+
+		<snackbar-event
+			:statement='addingCategories'
+			text='Adding category'
+		></snackbar-event>
+		<snackbar-event
+			:statement='removingCategories'
+			text='Removing category'
+		></snackbar-event>
 	</v-card>
 </template>
 
 <script>
 import moment from 'moment';
+
+import SnackbarEvent from '../SnackbarEvent.vue';
 
 import dateTimePicker from '../dateTimePicker.vue';
 import AddCategoryDialog from './addCategoryDialog.vue';
@@ -137,7 +148,8 @@ export default{
 	props: ['display'],
 	components: {
 		dateTimePicker,
-		AddCategoryDialog
+		AddCategoryDialog,
+		SnackbarEvent
 	},
 	data(){
 		return {
@@ -177,7 +189,14 @@ export default{
 			const timeStr = this.endTime.format('HH:mm');
 
 			return moment(`${dateStr} ${timeStr}`, 'DD.MM.YYYY HH:mm');
-		}
+		},
+
+		addingCategories(){
+			return this.$store.state.categories.adding;
+		},
+		removingCategories(){
+			return this.$store.state.categories.removing;
+		},
 	},
 	methods: {
 		close(){
