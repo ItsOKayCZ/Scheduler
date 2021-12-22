@@ -105,10 +105,20 @@ export default {
 					formatter: (val, opts) => {
 						const hours = this.timeSpentChartSeries[opts.seriesIndex];
 
-						if(hours == 1)
-							return `${hours} hour`;
-						return `${hours} hours`;
+						if(hours <= 1)
+							return `${hours.toFixed(2)} hour`;
+						return `${hours.toFixed(2)} hours`;
 					}
+				},
+				tooltip: {
+					x: {
+						show: false,
+					},
+					y: {
+						formatter: (value) => {
+							return `Testing: ${value.toFixed(2)}`;
+						},
+					},
 				},
 
 				...this.defaultChartOptions,
@@ -130,7 +140,8 @@ export default {
 
 				const start = moment(event.start);
 				const end = moment(event.end);
-				const hours = moment.duration(end.diff(start)).asHours();
+				const hours = parseFloat(moment.duration(end.diff(start)).asHours().toFixed(2));
+				console.log(hours);
 				summary[event.category] += hours;
 				freeTime -= hours;
 			}
