@@ -120,6 +120,7 @@ export default {
 			return this.$store.state.categories.data;
 		},
 		events() {
+			return [];
 			const events = this.$store.state.events.data
 				.map((e) => {
 					if (!e.start || !e.end) return null;
