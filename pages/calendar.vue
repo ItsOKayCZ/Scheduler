@@ -157,6 +157,25 @@ export default {
 				const selectedDate = moment(this.calendarDate, "YYYY-MM-DD");
 
 				switch (this.viewType) {
+					case 'day':
+						const dayDiff = Math.ceil(moment.duration(selectedDate.diff(start)).asDays());
+						if(dayDiff == 0) continue;
+
+						if(dayDiff % e.repeatAfter == 0){
+							const duration = end.diff(start, 'minute');
+							const modifiedStart = selectedDate.clone().set({
+								hours: start.hours(),
+								minutes: start.minutes()
+							});
+
+							events.push({
+								...e,
+								start: modifiedStart.toDate(),
+								end: modifiedStart.add(duration, 'minute').toDate()
+							});
+						}
+					break;
+
 					case "week":
 						const endWeek = selectedDate.clone().endOf("week");
 						for (
@@ -186,7 +205,38 @@ export default {
 								});
 							}
 						}
-						break;
+					break;
+
+					case 'month':
+						const endYear = selectedDate.clone().endOf('year');
+						for (
+							let day = selectedDate.clone().startOf('year');
+							day.isSameOrBefore(endYear);
+							day.add(1, "day")
+						) {
+							const dayDiff = Math.ceil(
+								moment.duration(day.diff(start)).asDays()
+							);
+							if (dayDiff == 0) continue;
+
+							if (dayDiff % e.repeatAfter == 0) {
+								const duration = end.diff(start, "minute");
+
+								const modifiedStart = day.clone().set({
+									hours: start.hours(),
+									minutes: start.minutes(),
+								});
+
+								events.push({
+									...e,
+									start: modifiedStart.toDate(),
+									end: modifiedStart
+										.add(duration, "minute")
+										.toDate(),
+								});
+							}
+						}
+					break;
 				}
 			}
 

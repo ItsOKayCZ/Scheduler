@@ -116,7 +116,9 @@ export default {
 					},
 					y: {
 						formatter: (value) => {
-							return `Testing: ${value.toFixed(2)}`;
+							if(value <= 1)
+								return `${value.toFixed(2)} hour`;
+							return `${value.toFixed(2)} hours`;
 						},
 					},
 				},
@@ -141,7 +143,6 @@ export default {
 				const start = moment(event.start);
 				const end = moment(event.end);
 				const hours = parseFloat(moment.duration(end.diff(start)).asHours().toFixed(2));
-				console.log(hours);
 				summary[event.category] += hours;
 				freeTime -= hours;
 			}

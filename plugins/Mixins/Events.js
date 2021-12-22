@@ -23,7 +23,6 @@ export default {
 				const eventEnd = moment(event.end);
 
 				if(!event.repeat && doRangesIntersect(eventStart, eventEnd, start, end)){
-					console.log('Not repeating, in range');
 					events.push({
 						...event,
 						start: maxTime(eventStart, start).toDate(),
