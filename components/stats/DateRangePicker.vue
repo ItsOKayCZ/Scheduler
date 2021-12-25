@@ -34,6 +34,26 @@
 
 			:first-day-of-week="1"
 		>
+			<v-menu>
+				<template v-slot:activator='{ on, attrs }'>
+					<v-btn
+						light
+
+						v-on='on'
+						v-bind='attrs'
+					>
+						Select range
+					</v-btn>
+				</template>
+
+				<v-list>
+					<v-list-item v-for='(preset, index) in presets' :key='index'>
+						<v-btn @click='selectRange(preset.type)' block depressed>{{ preset.title }}</v-btn>
+					</v-list-item>
+				</v-list>
+
+			</v-menu>
+
 			<v-spacer></v-spacer>
 			<v-btn @click='display = false'>Close</v-btn>
 		</v-date-picker>
@@ -47,7 +67,26 @@ export default {
 	props: ['dates'],
 	data(){
 		return {
-			display: false
+			display: false,
+
+			presets: [
+				{
+					title: 'Today',
+					type: 'day',
+				},
+				{
+					title: 'Week',
+					type: 'week',
+				},
+				{
+					title: 'Month',
+					type: 'month',
+				},
+				{
+					title: 'Year',
+					type: 'year'
+				}
+			],
 		};
 	},
 	computed: {
@@ -63,6 +102,11 @@ export default {
 		formattedDates(){
 			return this.dates.map(d => d.format('DD.MM.YYYY')).join(' - ');
 		}
+	},
+	methods: {
+		selectRange(type){
+			this.datesProxy = [moment().startOf(type), moment().endOf(type)];
+		},
 	},
 };
 </script>

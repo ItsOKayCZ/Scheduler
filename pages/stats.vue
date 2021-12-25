@@ -104,6 +104,8 @@ export default {
 				dataLabels: {
 					formatter: (val, opts) => {
 						const hours = this.timeSpentChartSeries[opts.seriesIndex];
+						if(!hours)
+							return;
 
 						if(hours <= 1)
 							return `${hours.toFixed(2)} hour`;
