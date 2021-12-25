@@ -5,40 +5,46 @@
 				<date-range-picker :dates.sync="dateRange"></date-range-picker>
 			</v-toolbar>
 
-			<v-container>
+			<v-container v-resize='onResize'>
+				<v-row>
+					<v-col
+						v-for='(panel, index) in panels'
+						:key='index'
+						:cols='cols'
+					>
+						<v-card
+							class='card mb-4'
+							color='grey darken-4'
+							:height='!openedPanels.includes(index) ? 64: ""'
+						>
+							<v-card-title class='card-title' @click='toggleCard(index)'>
+								{{ panel.title }}
+
+								<v-spacer></v-spacer>
+
+								<v-btn icon>
+									<v-icon v-show="openedPanels.includes(index)">mdi-chevron-down</v-icon>
+									<v-icon v-show="!openedPanels.includes(index)">mdi-chevron-up</v-icon>
+								</v-btn>
+							</v-card-title>
+
+							<v-divider></v-divider>
+
+							<v-card-text>
+								<VueApexCharts
+									:type="panel.chartOptions.type"
+									:options="panel.chartOptions"
+									:series="panel.series"
+								></VueApexCharts>
+							</v-card-text>
+						</v-card>
+					</v-col>
+				</v-row>
+
 				<v-skeleton-loader
 					v-if='!end'
 					type='card, card, card'
 				></v-skeleton-loader>
-				<v-card
-					v-if='end'
-					v-for="(panel, index) in panels"
-					:key="index"
-					class="card mb-4"
-					color="grey darken-4"
-					:height="!openedPanels.includes(index) ? 64 : ''"
-				>
-					<v-card-title class="card-title" @click="toggleCard(index)">
-						{{ panel.title }}
-
-						<v-spacer></v-spacer>
-
-						<v-btn icon>
-							<v-icon v-show="openedPanels.includes(index)">mdi-chevron-down</v-icon>
-							<v-icon v-show="!openedPanels.includes(index)">mdi-chevron-up</v-icon>
-						</v-btn>
-					</v-card-title>
-
-					<v-divider></v-divider>
-
-					<v-card-text>
-						<VueApexCharts
-							:type="panel.chartOptions.type"
-							:options="panel.chartOptions"
-							:series="panel.series"
-						></VueApexCharts>
-					</v-card-text>
-				</v-card>
 			</v-container>
 		</v-sheet>
 	</client-only>
@@ -73,10 +79,14 @@ export default {
 
 			start: moment().startOf("week"),
 			end: moment().endOf("week"),
+
+			cols: 6,
+			widthBreakpoint: 700,
 		};
 	},
 	created() {
 		this.openedPanels = Array.from(Array(this.panels.length).keys());
+		this.setColSize();
 	},
 	computed: {
 		panels() {
@@ -185,6 +195,15 @@ export default {
 				this.openedPanels = this.openedPanels.filter((p) => p != index);
 			else this.openedPanels.push(index);
 		},
+
+		setColSize(){
+			if(process.browser){
+				this.cols = window.innerWidth > this.widthBreakpoint ? 6 : 12;
+			}
+		},
+		onResize(){
+			this.setColSize();
+		}
 	},
 };
 </script>
