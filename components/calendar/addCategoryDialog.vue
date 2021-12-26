@@ -46,7 +46,12 @@
 </template>
 
 <script>
+import categoriesMixin from '~/plugins/mixins/Categories.js';
+
 export default {
+	mixins: [
+		categoriesMixin
+	],
 	data(){
 		return {
 			display: false,
@@ -74,7 +79,7 @@ export default {
 		},
 
 		save(){
-			this.$store.commit('categories/addCategory', {
+			this.addCategory({
 				title: this.name,
 				color: `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a})`
 			});

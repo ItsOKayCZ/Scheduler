@@ -54,7 +54,7 @@
 <script>
 import * as moment from "moment";
 
-import Events from '~/plugins/Mixins/Events';
+import Events from '~/plugins/mixins/Events';
 
 import DateRangePicker from "~/components/stats/DateRangePicker.vue";
 

@@ -47,6 +47,22 @@ app.post('/api/createEvent', async (req, res) => {
 	});
 });
 
+app.post('/api/editEvent', async (req, res) => {
+	const event = req.body;
+	if(!event){
+		res.status(400).send();
+		return;
+	}
+
+	console.log(`[EVENTS] Editing ${event._id}`);
+	await Event.updateOne({ _id: event._id }, event);
+	const events = await Event.find();
+
+	res.status(200).json({
+		events
+	});
+})
+
 app.post('/api/removeEvent', async (req, res) => {
 	const event = req.body;
 	if(!event){

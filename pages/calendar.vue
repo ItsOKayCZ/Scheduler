@@ -29,7 +29,7 @@
 					</v-btn>
 				</template>
 
-				<add-event-card
+				<configure-event-card
 					:display.sync="addEventDialog"
 					@add='addEvent'
 				/>
@@ -92,18 +92,25 @@ import moment from "moment";
 
 import settings from "../components/calendar/settings.vue";
 import datePicker from "../components/calendar/calendarDatePicker.vue";
-import addEventCard from "../components/calendar/addEventCard.vue";
+import configureEventCard from "../components/calendar/configureEventCard.vue";
 import eventMenu from "../components/calendar/eventMenu.vue";
 import snackbarEvent from '../components/SnackbarEvent.vue';
+
+import eventMixin from '~/plugins/mixins/Events.js';
+import colorMixin from '~/plugins/mixins/Color.js';
 
 export default {
 	components: {
 		settings,
 		datePicker,
-		addEventCard,
+		configureEventCard,
 		eventMenu,
 		snackbarEvent,
 	},
+	mixins: [
+		eventMixin,
+		colorMixin
+	],
 	data: () => ({
 		settingsDialog: false,
 		viewTypes: ["month", "week", "day"],
@@ -142,6 +149,9 @@ export default {
 		},
 		addingEvents(){
 			return this.$store.state.events.adding;
+		},
+		editingEvents(){
+			return this.$store.state.events.editing;
 		},
 		removingEvents(){
 			return this.$store.state.events.removing;
@@ -261,10 +271,6 @@ export default {
 		},
 	},
 	methods: {
-		async addEvent(event) {
-			this.$store.commit("events/addEvent", event);
-		},
-
 		selectEvent({ nativeEvent, event }) {
 			this.selectedEvent = event;
 			this.selectedEventDOM = nativeEvent.target;

@@ -60,6 +60,15 @@ export default {
 			}
 
 			return events;
+		},
+		addEvent(event){
+			this.$store.commit('events/addEvent', event);
+		},
+		editEvent(event){
+			this.$store.commit('events/editEvent', event);
+		},
+		removeEvent(event){
+			this.$store.commit('events/removeEvent', event);
 		}
 	}
 };

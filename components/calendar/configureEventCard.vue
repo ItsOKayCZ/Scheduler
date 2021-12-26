@@ -5,13 +5,17 @@
 				<v-icon>mdi-close</v-icon>
 			</v-btn>
 
-			<v-toolbar-title>Add event</v-toolbar-title>
+			<v-toolbar-title v-if='edit'>Edit event</v-toolbar-title>
+			<v-toolbar-title v-else>Add event</v-toolbar-title>
 
 			<v-spacer></v-spacer>
 
 			<v-toolbar-items>
-				<v-btn text @click='add' :disabled='!isFormValid'>
-					Add
+				<v-btn v-if='edit' text @click='editEvent' :disabled='!isFormValid'>
+					<v-icon>mdi-content-save-edit</v-icon>Edit
+				</v-btn>
+				<v-btn v-else text @click='add' :disabled='!isFormValid'>
+					<v-icon>mdi-plus-thick</v-icon>Add
 				</v-btn>
 			</v-toolbar-items>
 		</v-toolbar>
@@ -75,6 +79,7 @@
 							label='After (days)'
 
 							:rules='[rules.isPositiveNumber]'
+							@blur='setRepeatAfterErrorMessages'
 							:error-messages="repeatAfterErrorMessages"
 
 							style='max-width: 150px;'
@@ -159,19 +164,30 @@
 import moment from 'moment';
 
 import SnackbarEvent from '../SnackbarEvent.vue';
-
 import DateTimePicker from '../dateTimePicker.vue';
 import AddCategoryDialog from './addCategoryDialog.vue';
 import DatePicker from '../datePicker';
 
+import eventsMixin from '~/plugins/mixins/Events.js';
+import categoriesMixin from '~/plugins/mixins/Categories.js';
+
 export default{
-	props: ['display'],
+	props: [
+		'display',
+
+		'edit',
+		'event',
+	],
 	components: {
 		DateTimePicker,
 		AddCategoryDialog,
 		SnackbarEvent,
 		DatePicker,
 	},
+	mixins: [
+		eventsMixin,
+		categoriesMixin
+	],
 	data(){
 		return {
 			name: '',
@@ -196,6 +212,9 @@ export default{
 			repeatAfterErrorMessages: [],
 		}
 	},
+	created(){
+		this.setEventForEdit();
+	},
 	computed: {
 		categories(){
 			return this.$store.state.categories.data;
@@ -213,6 +232,18 @@ export default{
 
 			return moment(`${dateStr} ${timeStr}`, 'DD.MM.YYYY HH:mm');
 		},
+		eventObj(){
+			return {
+				name: this.name,
+				start: this.start.toDate(),
+				end: this.end.toDate(),
+				category: this.category,
+				timed: !this.allDay,
+				repeat: this.repeat,
+				repeatAfter: this.repeatAfter,
+				repeatTo: this.repeatTo
+			};
+		},
 
 		addingCategories(){
 			return this.$store.state.categories.adding;
@@ -226,21 +257,34 @@ export default{
 			this.$emit('update:display', false);
 		},
 		add(){
-			this.$emit('add', {
-				name: this.name,
-				start: this.start.toDate(),
-				end: this.end.toDate(),
-				category: this.category,
-				timed: !this.allDay,
-				repeat: this.repeat,
-				repeatAfter: this.repeatAfter,
-				repeatTo: this.repeatTo
-			});
+			this.$emit('add', this.eventObj);
 			this.close();
 		},
+		editEvent(){
+			this.$emit('edit', this.eventObj);
+			this.close();
+		},
+		setEventForEdit(){
+			if(this.edit){
+				this.name = this.event.name;
+				this.startDate = this.startTime = moment(this.event.start);
+				this.endDate = this.endTime = moment(this.event.end);
+				this.category = this.event.category;
+				this.allDay = !this.event.timed;
 
-		removeCategory(category){
-			this.$store.commit('categories/removeCategory', category);
+				this.repeat = this.event.repeat;
+				this.repeatAfter = this.event.repeatAfter;
+				this.repeatTo = this.event.repeatTo ? moment(this.event.repeatTo) : null;
+
+				this.$nextTick(() => {
+					this.$refs.form.resetValidation();
+					this.repeatAfterErrorMessages = [];
+				});
+			}
+		},
+
+		setRepeatAfterErrorMessages(){
+			this.repeatAfterErrorMessages = this.$refs.repeatAfter.errorBucket;
 		},
 
 		setRepeatToToday(){
@@ -263,6 +307,9 @@ export default{
 		repeatAfter(value){
 			if(typeof(value) !== 'number' && !isNaN(parseInt(value)))
 				this.repeatAfter = parseInt(value);
+		},
+		event(){
+			this.setEventForEdit();
 		}
 	}
 };

@@ -4,6 +4,7 @@ export const state = () => ({
 		data: [],
 
 		adding: false,
+		editing: false,
 		removing: false
 });
 
@@ -15,6 +16,13 @@ export const mutations = {
 		this.commit('events/setAdding', false);
 
 		this.commit('events/pushEvent', res.data.event);
+	},
+	async editEvent(state, event){
+		this.commit('events/setEditing', true);
+		const res = await api.editEvent(event);
+		this.commit('events/setEditing', false);
+
+		this.commit('events/setEvents', res.data.events);
 	},
 	async removeEvent(state, event){
 		this.commit('events/setRemoving', true);

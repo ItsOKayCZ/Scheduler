@@ -4,7 +4,8 @@
 		:activator="activator"
 		offset-x
 		:close-on-content-click="false"
-		max-width="200px"
+		max-width="400px"
+		min-width="250px"
 	>
 		<v-card flat>
 			<v-toolbar
@@ -24,9 +25,27 @@
 				</v-tooltip>
 				<v-spacer></v-spacer>
 
-				<v-btn icon @click="removeEvent">
-					<v-icon>mdi-delete</v-icon>
-				</v-btn>
+				<v-dialog
+					v-model='editEventDialog'
+					fullscreen
+					transition="dialog-bottom-transition"
+				>
+					<template v-slot:activator='{ on, attrs }'>
+						<v-btn icon
+							v-bind='attrs'
+							v-on='on'
+						>
+							<v-icon>mdi-pencil</v-icon>
+						</v-btn>
+					</template>
+
+					<configure-event-card
+						:display.sync='editEventDialog'
+						:edit='true'
+						:event='event'
+						@edit='edit'
+					/>
+				</v-dialog>
 			</v-toolbar>
 
 			<v-card-text>
@@ -50,23 +69,50 @@
 					</p>
 				</template>
 			</v-card-text>
+
+			<v-card-actions>
+				<v-spacer></v-spacer>
+				<v-btn :color='needConfirmDelete ? "primary" : "red"' @click='confirmToDeleteEvent'>
+					<v-icon>mdi-delete</v-icon>Delete
+				</v-btn>
+			</v-card-actions>
 		</v-card>
 	</v-menu>
 </template>
 
 <script>
 import moment from "moment";
+import configureEventCard from "./configureEventCard.vue";
+
+import eventsMixin from '~/plugins/mixins/Events';
+import colorMixin from '~/plugins/mixins/Color';
 
 export default {
+	components: { configureEventCard },
 	props: ["event", "activator"],
+	mixins: [ colorMixin, eventsMixin ],
 	data() {
 		return {
 			display: false,
+			editEventDialog: false,
+
+			needConfirmDelete: true,
 		};
 	},
 	methods: {
-		removeEvent() {
-			this.$store.commit("events/removeEvent", this.event);
+		edit(event){
+			this.editEvent({
+				...event,
+				_id: this.event._id
+			});
+			this.display = false;
+		},
+		confirmToDeleteEvent() {
+			if(this.needConfirmDelete){
+				this.needConfirmDelete = false;
+				return;
+			}
+			this.removeEvent(this.event);
 			this.display = false;
 		},
 	},
@@ -114,6 +160,11 @@ export default {
 				);
 			} else this.display = false;
 		},
+		display(){
+			if(!this.display){
+				this.needConfirmDelete = true;
+			}
+		}
 	},
 };
 </script>

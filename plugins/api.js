@@ -19,6 +19,9 @@ api.removeCategory = async function(category){
 api.createEvent = async function(event){
 	return await this.post('/api/createEvent', event);
 }
+api.editEvent = async function(event){
+	return await this.post('/api/editEvent', event);
+}
 api.getEvents = async function(){
 	return await this.post('/api/getEvents');
 }
