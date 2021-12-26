@@ -11,7 +11,17 @@
 				:light='isContrastingColor(eventColor)'
 				:color="eventColor"
 			>
-				<v-toolbar-title>{{ eventName }}</v-toolbar-title>
+				<v-tooltip top>
+					<template v-slot:activator='{ on, attrs }'>
+						<v-toolbar-title
+							v-on='on'
+							v-bind='attrs'
+						>
+							{{ eventName }}
+						</v-toolbar-title>
+					</template>
+					<span>{{ eventName }}</span>
+				</v-tooltip>
 				<v-spacer></v-spacer>
 
 				<v-btn icon @click="removeEvent">
@@ -28,10 +38,17 @@
 					<strong>End: </strong
 					>{{ eventEnd.format("DD.MM.YYYY HH:mm") }}
 				</p>
+
 				<p><strong>Repeat: </strong>{{ eventRepeat }}</p>
-				<p v-show="eventRepeat">
-					<strong>After:</strong> {{ eventRepeatAfter }} day(s)
-				</p>
+				<template v-if='eventRepeat'>
+					<p>
+						<strong>After:</strong> {{ eventRepeatAfter }} day(s)
+					</p>
+
+					<p>
+						<strong>To:</strong> {{ eventRepeatTo }}
+					</p>
+				</template>
 			</v-card-text>
 		</v-card>
 	</v-menu>
@@ -79,6 +96,10 @@ export default {
 			if (!this.event?.repeatAfter) return 0;
 			return this.event.repeatAfter;
 		},
+		eventRepeatTo(){
+			if(!this.event?.repeatTo) return 'Infinite';
+			return moment(this.event.repeatTo).format('DD.MM.YYYY');
+		}
 	},
 	watch: {
 		event(value, prevVal) {

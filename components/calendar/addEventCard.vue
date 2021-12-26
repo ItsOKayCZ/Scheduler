@@ -17,7 +17,7 @@
 		</v-toolbar>
 
 		<v-card-text>
-			<v-form v-model='isFormValid' class='mt-4'>
+			<v-form v-model='isFormValid' ref='form' class='mt-4' lazy-validation>
 				<v-row>
 					<v-col cols='12'>
 						<v-text-field
@@ -58,7 +58,7 @@
 						></v-switch>
 					</v-col>
 
-					<v-col cols='12' class='d-flex flex-row'>
+					<v-col cols='12' class='d-flex flex-row align-center'>
 						<v-switch
 							v-model='repeat'
 							label='Repeat'
@@ -68,22 +68,41 @@
 						></v-switch>
 
 						<v-text-field
+							ref='repeatAfter'
+
 							type='number'
 							v-model='repeatAfter'
-							label='After'
+							label='After (days)'
 
-							:rules='[rules.positiveNumber]'
+							:rules='[rules.isPositiveNumber]'
+							:error-messages="repeatAfterErrorMessages"
 
 							style='max-width: 150px;'
+							class='mr-4'
 
 							:disabled='!repeat'
 						></v-text-field>
+
+						<date-picker
+							:date.sync='repeatTo'
+							value-if-empty='Infinite'
+							label='To'
+
+							:disabled='!repeat'
+							:clearable='true'
+							:allowed-dates='allowedDates'
+						>
+							<v-spacer></v-spacer>
+							<v-btn @click='setRepeatToToday'>
+								Today
+							</v-btn>
+						</date-picker>
 					</v-col>
 
 					<v-col cols='12'>
 						<v-divider class='mb-4'></v-divider>
 						<v-autocomplete
-						outlined
+							outlined
 
 							v-model='category'
 							:items='categories'
@@ -100,7 +119,7 @@
 							</template>
 
 							<template v-slot:item='data'>
-								<div style='width: 100%;' class='d-flex justify-space-between align-center'>
+								<div style='width: 100%;' class='d-flex justify-space-between align-start'>
 									<v-chip outlined :color='data.item.color' class='capitalize'>
 										<v-icon left>mdi-circle</v-icon>
 										{{ data.item.title }}
@@ -141,15 +160,17 @@ import moment from 'moment';
 
 import SnackbarEvent from '../SnackbarEvent.vue';
 
-import dateTimePicker from '../dateTimePicker.vue';
+import DateTimePicker from '../dateTimePicker.vue';
 import AddCategoryDialog from './addCategoryDialog.vue';
+import DatePicker from '../datePicker';
 
 export default{
 	props: ['display'],
 	components: {
-		dateTimePicker,
+		DateTimePicker,
 		AddCategoryDialog,
-		SnackbarEvent
+		SnackbarEvent,
+		DatePicker,
 	},
 	data(){
 		return {
@@ -162,15 +183,17 @@ export default{
 			allDay: false,
 
 			repeat: false,
-			repeatAfter: 0,
+			repeatAfter: 1,
+			repeatTo: null,
 
 			datePickerFormat: 'DD (ddd).MM.YYYY',
 			rules: {
 				required: value => !!value || 'Required',
-				positiveNumber: value => (!this.repeat || value > 0) || 'Number has to be bigger than 0'
+				isPositiveNumber: value => !this.repeat || (typeof(value) === 'number' && value > 0) || 'Must be positive number',
 			},
 
 			isFormValid: false,
+			repeatAfterErrorMessages: [],
 		}
 	},
 	computed: {
@@ -210,15 +233,38 @@ export default{
 				category: this.category,
 				timed: !this.allDay,
 				repeat: this.repeat,
-				repeatAfter: this.repeatAfter
+				repeatAfter: this.repeatAfter,
+				repeatTo: this.repeatTo
 			});
 			this.close();
 		},
 
 		removeCategory(category){
 			this.$store.commit('categories/removeCategory', category);
-		}
+		},
+
+		setRepeatToToday(){
+			this.repeatTo = moment();
+		},
+		allowedDates(date){
+			return moment(date, 'YYYY-MM-DD').isSameOrAfter(moment(), 'day');
+		},
 	},
+	watch: {
+		repeat(){
+			if(!this.repeat){
+				this.$refs.repeatAfter.resetValidation();
+				this.repeatAfterErrorMessages = [];
+			} else {
+				this.$refs.repeatAfter.validate()
+				this.repeatAfterErrorMessages = this.$refs.repeatAfter.errorBucket;
+			}
+		},
+		repeatAfter(value){
+			if(typeof(value) !== 'number' && !isNaN(parseInt(value)))
+				this.repeatAfter = parseInt(value);
+		}
+	}
 };
 </script>
 

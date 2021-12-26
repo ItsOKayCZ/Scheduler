@@ -5,8 +5,13 @@
 				<date-range-picker :dates.sync="dateRange"></date-range-picker>
 			</v-toolbar>
 
+
 			<v-container v-resize='onResize'>
-				<v-row>
+				<v-skeleton-loader
+					v-if='!end'
+					type='card, card, card'
+				></v-skeleton-loader>
+				<v-row v-else>
 					<v-col
 						v-for='(panel, index) in panels'
 						:key='index'
@@ -41,10 +46,6 @@
 					</v-col>
 				</v-row>
 
-				<v-skeleton-loader
-					v-if='!end'
-					type='card, card, card'
-				></v-skeleton-loader>
 			</v-container>
 		</v-sheet>
 	</client-only>

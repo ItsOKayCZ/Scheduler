@@ -1,7 +1,7 @@
 <template>
 	<v-sheet max-height="100%" height="100%">
 		<v-toolbar height="56px">
-			<date-picker :date.sync="calendarDate" :view-type="viewType" />
+			<calendar-date-picker :date.sync="calendarDate" />
 
 			<v-dialog v-model="settingsDialog">
 				<template v-slot:activator="{ on, attrs }">
@@ -91,7 +91,7 @@
 import moment from "moment";
 
 import settings from "../components/calendar/settings.vue";
-import datePicker from "../components/calendar/datePicker.vue";
+import datePicker from "../components/calendar/calendarDatePicker.vue";
 import addEventCard from "../components/calendar/addEventCard.vue";
 import eventMenu from "../components/calendar/eventMenu.vue";
 import snackbarEvent from '../components/SnackbarEvent.vue';
@@ -158,6 +158,12 @@ export default {
 
 				switch (this.viewType) {
 					case 'day':
+						if(e.repeatTo){
+							const repeatTo = moment(e.repeatTo);
+							if(selectedDate.isAfter(repeatTo, 'day'))
+								continue;
+						}
+
 						const dayDiff = Math.ceil(moment.duration(selectedDate.diff(start)).asDays());
 						if(dayDiff == 0) continue;
 
@@ -183,6 +189,11 @@ export default {
 							day.isSameOrBefore(endWeek);
 							day.add(1, "day")
 						) {
+							if(e.repeatTo){
+								const repeatTo = moment(e.repeatTo);
+								if(day.isAfter(repeatTo, 'day'))
+									break;
+							}
 							const dayDiff = Math.ceil(
 								moment.duration(day.diff(start)).asDays()
 							);
@@ -214,6 +225,12 @@ export default {
 							day.isSameOrBefore(endYear);
 							day.add(1, "day")
 						) {
+							if(e.repeatTo){
+								const repeatTo = moment(e.repeatTo);
+								if(day.isAfter(repeatTo, 'day'))
+									break;
+							}
+
 							const dayDiff = Math.ceil(
 								moment.duration(day.diff(start)).asDays()
 							);

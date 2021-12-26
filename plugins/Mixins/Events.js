@@ -30,6 +30,12 @@ export default {
 					});
 				} else if(event.repeat){
 					for(let day = start.clone(); day.isSameOrBefore(end); day.add(1, 'day')){
+						if(event.repeatTo){
+							const repeatTo = moment(event.repeatTo);
+							if(day.isAfter(repeatTo, 'day'))
+								break;
+						}
+
 						const dayDiff = Math.ceil(moment.duration(day.diff(eventStart)).asDays());
 						if(dayDiff % event.repeatAfter == 0){
 

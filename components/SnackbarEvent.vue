@@ -4,6 +4,7 @@
 		timeout='-1'
 
 		width='300px'
+		@click="display = false"
 	>
 		<v-row>
 			<v-col class='d-flex flex-row'>

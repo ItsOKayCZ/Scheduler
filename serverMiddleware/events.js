@@ -15,7 +15,8 @@ const eventSchema = new mongoose.Schema({
 	timed: Boolean,
 
 	repeat: Boolean,
-	repeatAfter: Number
+	repeatAfter: Number,
+	repeatTo: Date,
 });
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 
@@ -35,7 +36,8 @@ app.post('/api/createEvent', async (req, res) => {
 		timed: body.timed,
 
 		repeat: body.repeat,
-		repeatAfter: body.repeatAfter
+		repeatAfter: body.repeatAfter,
+		repeatTo: body.repeatTo
 	});
 	await event.save();
 	console.log('[EVENTS] Saved');

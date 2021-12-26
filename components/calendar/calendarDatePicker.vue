@@ -16,7 +16,7 @@
 				readonly
 				prepend-inner-icon="mdi-calendar-search"
 
-				style='max-width: 130px'
+				style='max-width: 140px'
 
 				outlined
 				dense
@@ -43,7 +43,7 @@
 import moment from 'moment';
 
 export default{
-	props: ['date', 'viewType'],
+	props: ['date'],
 	data(){
 		return {
 			display: false,
