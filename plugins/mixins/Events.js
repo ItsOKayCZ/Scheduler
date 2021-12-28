@@ -36,6 +36,12 @@ export default {
 								break;
 						}
 
+							if(event.repeatTo && this.isAfterRepeatDate(day, event))
+								continue;
+
+							if(this.isDateExcluded(day, event))
+								continue;
+
 						const dayDiff = Math.ceil(moment.duration(day.diff(eventStart)).asDays());
 						if(dayDiff % event.repeatAfter == 0){
 
@@ -69,6 +75,23 @@ export default {
 		},
 		removeEvent(event){
 			this.$store.commit('events/removeEvent', event);
+		},
+		removeCurrentEvent(event){
+			this.$store.commit('events/removeCurrentEvent', event)
+		},
+
+		isAfterRepeatDate(date, event){
+			const repeatTo = moment(event.repeatTo);
+			return date.isAfter(repeatTo, 'day');
+		},
+		isDateExcluded(date, event){
+			for(let excludeDate of event.exclude){
+				excludeDate = moment(excludeDate);
+				if(excludeDate.isSame(date, 'day'))
+					return true;
+			}
+
+			return false;
 		}
 	}
 };

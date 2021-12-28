@@ -7,7 +7,7 @@
 		@click="display = false"
 	>
 		<v-row>
-			<v-col class='d-flex flex-row'>
+			<v-col class='d-flex flex-row align-center'>
 				{{ text }}
 
 				<v-spacer></v-spacer>

@@ -50,7 +50,7 @@
 				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
 				:type="viewType"
 				mode="column"
-				:events="[...events, ...repeatingEvents]"
+				:events='events'
 				@click:event="selectEvent"
 			>
 				<template v-slot:event="data">
@@ -81,8 +81,12 @@
 			text='Adding event'
 		></snackbar-event>
 		<snackbar-event
+			:statement='editingEvents'
+			text='Editing event'
+		></snackbar-event>
+		<snackbar-event
 			:statement='removingEvents'
-			text='Removing event'
+			text='Deleting event'
 		></snackbar-event>
 	</v-sheet>
 </template>
@@ -123,27 +127,30 @@ export default {
 		selectedEventDOM: null,
 	}),
 	computed: {
+		calendarDateMoment(){
+			return moment(this.calendarDate, 'YYYY-MM-DD');
+		},
 		categories() {
 			return this.$store.state.categories.data;
 		},
 		events() {
-			const events = this.$store.state.events.data
-				.map((e) => {
-					if (!e.start || !e.end) return null;
+			const start = this.calendarDateMoment.clone().startOf(this.viewType);
+			const end = this.calendarDateMoment.clone().endOf(this.viewType);
 
-					const category = this.categories.find(
-						(c) => c.title == e.category
-					);
-					if (!category) return null;
+			const events = this.getAllEventsInRange(start, end)
+			.map((e) => {
+				let color = '#555';
+				const category = this.categories.find(c => c.title == e.category);
+				if(category)
+					color = category.color;
 
-					return {
-						...e,
-						start: new Date(e.start),
-						end: new Date(e.end),
-						color: category.color,
-					};
-				})
-				.filter((e) => e != null);
+				return {
+					...e,
+					start: new Date(e.start),
+					end: new Date(e.end),
+					color
+				};
+			});
 
 			return events;
 		},
@@ -155,119 +162,6 @@ export default {
 		},
 		removingEvents(){
 			return this.$store.state.events.removing;
-		},
-		repeatingEvents() {
-			const events = [];
-			for (const e of this.events) {
-				if (!e.repeat) continue;
-
-				const start = moment(e.start);
-				const end = moment(e.end);
-
-				const selectedDate = moment(this.calendarDate, "YYYY-MM-DD");
-
-				switch (this.viewType) {
-					case 'day':
-						if(e.repeatTo){
-							const repeatTo = moment(e.repeatTo);
-							if(selectedDate.isAfter(repeatTo, 'day'))
-								continue;
-						}
-
-						const dayDiff = Math.ceil(moment.duration(selectedDate.diff(start)).asDays());
-						if(dayDiff == 0) continue;
-
-						if(dayDiff % e.repeatAfter == 0){
-							const duration = end.diff(start, 'minute');
-							const modifiedStart = selectedDate.clone().set({
-								hours: start.hours(),
-								minutes: start.minutes()
-							});
-
-							events.push({
-								...e,
-								start: modifiedStart.toDate(),
-								end: modifiedStart.add(duration, 'minute').toDate()
-							});
-						}
-					break;
-
-					case "week":
-						const endWeek = selectedDate.clone().endOf("week");
-						for (
-							let day = selectedDate.clone().startOf("week");
-							day.isSameOrBefore(endWeek);
-							day.add(1, "day")
-						) {
-							if(e.repeatTo){
-								const repeatTo = moment(e.repeatTo);
-								if(day.isAfter(repeatTo, 'day'))
-									break;
-							}
-							const dayDiff = Math.ceil(
-								moment.duration(day.diff(start)).asDays()
-							);
-							if (dayDiff == 0) continue;
-
-							if (dayDiff % e.repeatAfter == 0) {
-								const duration = end.diff(start, "minute");
-
-								const modifiedStart = day.clone().set({
-									hours: start.hours(),
-									minutes: start.minutes(),
-								});
-
-								events.push({
-									...e,
-									start: modifiedStart.toDate(),
-									end: modifiedStart
-										.add(duration, "minute")
-										.toDate(),
-								});
-							}
-						}
-					break;
-
-					case 'month':
-						const endYear = selectedDate.clone().endOf('year');
-						for (
-							let day = selectedDate.clone().startOf('year');
-							day.isSameOrBefore(endYear);
-							day.add(1, "day")
-						) {
-							if(e.repeatTo){
-								const repeatTo = moment(e.repeatTo);
-								if(day.isAfter(repeatTo, 'day'))
-									break;
-							}
-
-							const dayDiff = Math.ceil(
-								moment.duration(day.diff(start)).asDays()
-							);
-							if (dayDiff == 0) continue;
-
-							if (dayDiff % e.repeatAfter == 0) {
-								const duration = end.diff(start, "minute");
-
-								const modifiedStart = day.clone().set({
-									hours: start.hours(),
-									minutes: start.minutes(),
-								});
-
-								events.push({
-									...e,
-									start: modifiedStart.toDate(),
-									end: modifiedStart
-										.add(duration, "minute")
-										.toDate(),
-								});
-							}
-						}
-					break;
-				}
-			}
-
-			return events;
 		},
 	},
 	methods: {

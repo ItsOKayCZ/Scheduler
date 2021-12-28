@@ -31,6 +31,13 @@ export const mutations = {
 
 		this.commit('events/setEvents', res.data.events);
 	},
+	async removeCurrentEvent(state, event){
+		this.commit('events/setRemoving', true);
+		const res = await api.removeCurrentEvent(event);
+		this.commit('events/setRemoving', false);
+
+		this.commit('events/setEvents', res.data.events);
+	},
 
 	pushEvent(state, event){
 		state.data.push(event);

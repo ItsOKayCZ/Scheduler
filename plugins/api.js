@@ -28,5 +28,8 @@ api.getEvents = async function(){
 api.removeEvent = async function(event){
 	return await this.post('/api/removeEvent', event);
 }
+api.removeCurrentEvent = async function(event){
+	return await this.post('/api/removeCurrentEvent', event);
+}
 
 export default api;

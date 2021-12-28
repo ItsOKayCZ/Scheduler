@@ -2,6 +2,8 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const moment = require('moment');
+
 mongoose.connect('mongodb://localhost:27017/scheduler', function(err){
 	if(err)
 		console.log(err);
@@ -17,6 +19,8 @@ const eventSchema = new mongoose.Schema({
 	repeat: Boolean,
 	repeatAfter: Number,
 	repeatTo: Date,
+
+	exclude: [Date],
 });
 const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
 
@@ -28,17 +32,7 @@ app.post('/api/createEvent', async (req, res) => {
 		return;
 	}
 
-	const event = new Event({
-		name: body.name,
-		start: body.start,
-		end: body.end,
-		category: body.category,
-		timed: body.timed,
-
-		repeat: body.repeat,
-		repeatAfter: body.repeatAfter,
-		repeatTo: body.repeatTo
-	});
+	const event = new Event(getEventFromBody(body));
 	await event.save();
 	console.log('[EVENTS] Saved');
 
@@ -55,7 +49,7 @@ app.post('/api/editEvent', async (req, res) => {
 	}
 
 	console.log(`[EVENTS] Editing ${event._id}`);
-	await Event.updateOne({ _id: event._id }, event);
+	await Event.updateOne({ _id: event._id }, getEventFromBody(event));
 	const events = await Event.find();
 
 	res.status(200).json({
@@ -79,6 +73,24 @@ app.post('/api/removeEvent', async (req, res) => {
 	});
 });
 
+app.post('/api/removeCurrentEvent', async (req, res) => {
+	const event = req.body;
+	if(!event){
+		res.status(400).send();
+		return;
+	}
+
+	console.log(`[EVENTS] Deleting ${moment(event.start).format('DD.MM.YYYY HH:mm')}; id: ${event._id}`);
+	const exclude = event.exclude;
+	exclude.push(event.start);
+	await Event.updateOne({ _id: event._id }, { exclude })
+
+	const events = await Event.find();
+	res.status(200).json({
+		events
+	});
+});
+
 app.post('/api/getEvents', async (req, res) => {
 	console.log('[EVENTS] Sending');
 
@@ -89,5 +101,20 @@ app.post('/api/getEvents', async (req, res) => {
 	});
 });
 
+function getEventFromBody(body){
+	return {
+		name: body.name,
+		start: body.start,
+		end: body.end,
+		category: body.category,
+		timed: body.timed,
+
+		repeat: body.repeat,
+		repeatAfter: body.repeatAfter,
+		repeatTo: body.repeatTo,
+
+		exclude: body.exclude,
+	};
+}
 
 module.exports = app;

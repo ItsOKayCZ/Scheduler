@@ -49,32 +49,40 @@
 			</v-toolbar>
 
 			<v-card-text>
-				<p>
-					<strong>Start: </strong
-					>{{ eventStart.format("DD.MM.YYYY HH:mm") }}
-				</p>
-				<p>
-					<strong>End: </strong
-					>{{ eventEnd.format("DD.MM.YYYY HH:mm") }}
-				</p>
+				<div>
+					<h3 class='white--text'>Duration</h3>
+					<p>{{ eventStart.format('DD.MM.YYYY HH:mm') }} - {{ eventEnd.format('DD.MM.YYYY HH:mm') }}</p>
+				</div>
+				<div v-if='eventRepeat'>
+					<h3 class='white--text'>Repeat</h3>
+					<p>Every {{ eventRepeatAfter }} day(s) to {{ eventRepeatTo }}</p>
 
-				<p><strong>Repeat: </strong>{{ eventRepeat }}</p>
-				<template v-if='eventRepeat'>
-					<p>
-						<strong>After:</strong> {{ eventRepeatAfter }} day(s)
-					</p>
-
-					<p>
-						<strong>To:</strong> {{ eventRepeatTo }}
-					</p>
-				</template>
+					<template v-if='eventExclude != null'>
+						<h3 class='white--text'>Excluded for</h3>
+						<ul v-for='(date, index) of eventExclude' :key='index'>
+							<li>{{ date }}</li>
+						</ul>
+					</template>
+				</div>
 			</v-card-text>
 
 			<v-card-actions>
 				<v-spacer></v-spacer>
-				<v-btn :color='needConfirmDelete ? "primary" : "red"' @click='confirmToDeleteEvent'>
+				<v-btn v-if='!eventRepeat' @click='confirmToDeleteEvent' :color='needConfirmDelete ? "primary" : "red"'>
 					<v-icon>mdi-delete</v-icon>Delete
 				</v-btn>
+				
+				<div class='d-flex flex-column'>
+					<h4>Delete</h4>
+					<v-btn-toggle dense>
+						<v-btn @click='confirmToDeleteEventOnce' :color='needConfirmDeleteOnce ? "primary" : "red"'>
+							<v-icon>mdi-repeat-once</v-icon>Current
+						</v-btn>
+						<v-btn @click='confirmToDeleteEvent' :color='needConfirmDelete ? "primary" : "red"'>
+							<v-icon>mdi-calendar-refresh</v-icon>Repeating
+						</v-btn>
+					</v-btn-toggle>
+				</div>
 			</v-card-actions>
 		</v-card>
 	</v-menu>
@@ -97,6 +105,7 @@ export default {
 			editEventDialog: false,
 
 			needConfirmDelete: true,
+			needConfirmDeleteOnce: true,
 		};
 	},
 	methods: {
@@ -109,12 +118,23 @@ export default {
 		},
 		confirmToDeleteEvent() {
 			if(this.needConfirmDelete){
+				this.needConfirmDeleteOnce = true;
 				this.needConfirmDelete = false;
 				return;
 			}
 			this.removeEvent(this.event);
 			this.display = false;
 		},
+		confirmToDeleteEventOnce(){
+			if(this.needConfirmDeleteOnce){
+				this.needConfirmDeleteOnce = false;
+				this.needConfirmDelete = true;
+				return;
+			}
+
+			this.removeCurrentEvent(this.event);
+			this.display = false;
+		}
 	},
 	computed: {
 		eventName() {
@@ -145,6 +165,11 @@ export default {
 		eventRepeatTo(){
 			if(!this.event?.repeatTo) return 'Infinite';
 			return moment(this.event.repeatTo).format('DD.MM.YYYY');
+		},
+		eventExclude(){
+			if(!this.event?.exclude) return null;
+			if(this.event.exclude.length == 0) return null;
+			return this.event.exclude.map(d => moment(d).format('DD.MM.YYYY'));
 		}
 	},
 	watch: {
@@ -163,6 +188,7 @@ export default {
 		display(){
 			if(!this.display){
 				this.needConfirmDelete = true;
+				this.needConfirmDeleteOnce = true;
 			}
 		}
 	},

@@ -21,7 +21,7 @@
 		</v-toolbar>
 
 		<v-card-text>
-			<v-form v-model='isFormValid' ref='form' class='mt-4' lazy-validation>
+			<v-form v-model='isFormValid' @change='didChange = true' ref='form' class='mt-4' lazy-validation>
 				<v-row>
 					<v-col cols='12'>
 						<v-text-field
@@ -201,6 +201,7 @@ export default{
 			repeat: false,
 			repeatAfter: 1,
 			repeatTo: null,
+			exclude: [],
 
 			datePickerFormat: 'DD (ddd).MM.YYYY',
 			rules: {
@@ -209,6 +210,7 @@ export default{
 			},
 
 			isFormValid: false,
+			didChange: false,
 			repeatAfterErrorMessages: [],
 		}
 	},
@@ -233,6 +235,10 @@ export default{
 			return moment(`${dateStr} ${timeStr}`, 'DD.MM.YYYY HH:mm');
 		},
 		eventObj(){
+			let exclude = [];
+			if(!this.edit && !this.didChange)
+				exclude = this.exclude;
+
 			return {
 				name: this.name,
 				start: this.start.toDate(),
@@ -241,7 +247,8 @@ export default{
 				timed: !this.allDay,
 				repeat: this.repeat,
 				repeatAfter: this.repeatAfter,
-				repeatTo: this.repeatTo
+				repeatTo: this.repeatTo,
+				exclude
 			};
 		},
 
@@ -275,6 +282,8 @@ export default{
 				this.repeat = this.event.repeat;
 				this.repeatAfter = this.event.repeatAfter;
 				this.repeatTo = this.event.repeatTo ? moment(this.event.repeatTo) : null;
+
+				this.exclude = this.event.exclude;
 
 				this.$nextTick(() => {
 					this.$refs.form.resetValidation();
