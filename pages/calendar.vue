@@ -44,7 +44,7 @@
 		</v-toolbar>
 
 		<div class="calendarContainer">
-			<v-calendar
+			<!-- <v-calendar
 				ref="calendar"
 				v-model="calendarDate"
 				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
@@ -73,7 +73,39 @@
 			<event-menu
 				:event.sync="selectedEvent"
 				:activator="selectedEventDOM"
-			/>
+			></event-menu> -->
+
+			<v-calendar
+				ref="calendar"
+				v-model="calendarDate"
+				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
+				:type="viewType"
+				mode="column"
+				:events='events'
+				@click:event="selectEvent"
+			>
+				<template v-slot:event="data">
+					<v-sheet
+						class="pl-1 eventCard"
+						:class="{
+							blackText: isContrastingColor(data.event.color)
+						}"
+						:color="data.event.color"
+						event.width="100%"
+						height="100%"
+					>
+						<h3>{{ data.event.name }}</h3>
+						{{ data.eventParsed.start.time }} -
+						{{ data.eventParsed.end.time }}
+					</v-sheet>
+				</template>
+			</v-calendar>
+
+			<event-menu
+				:display.sync='eventMenuDisplay'
+				:event.sync="selectedEvent"
+				:activator="selectedEventDOM"
+			></event-menu>
 		</div>
 
 		<snackbar-event
@@ -125,6 +157,7 @@ export default {
 
 		selectedEvent: null,
 		selectedEventDOM: null,
+		eventMenuDisplay: false,
 	}),
 	computed: {
 		calendarDateMoment(){
@@ -166,8 +199,18 @@ export default {
 	},
 	methods: {
 		selectEvent({ nativeEvent, event }) {
-			this.selectedEvent = event;
-			this.selectedEventDOM = nativeEvent.target;
+			const open = () => {
+				this.selectedEvent = event;
+				this.selectedEventDOM = nativeEvent.target;
+				requestAnimationFrame(() => requestAnimationFrame(() => this.eventMenuDisplay = true));
+			}
+
+			if(this.eventMenuDisplay){
+				this.eventMenuDisplay = false;
+				requestAnimationFrame(() => requestAnimationFrame(() => open()));
+			} else
+				open();
+
 
 			nativeEvent.stopPropagation();
 		},

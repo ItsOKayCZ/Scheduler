@@ -1,6 +1,6 @@
 <template>
 	<v-menu
-		v-model="display"
+		v-model="displayProxy"
 		:activator="activator"
 		offset-x
 		:close-on-content-click="false"
@@ -97,44 +97,15 @@ import colorMixin from '~/plugins/mixins/Color';
 
 export default {
 	components: { configureEventCard },
-	props: ["event", "activator"],
+	props: ["event", "activator", 'display'],
 	mixins: [ colorMixin, eventsMixin ],
 	data() {
 		return {
-			display: false,
 			editEventDialog: false,
 
 			needConfirmDelete: true,
 			needConfirmDeleteOnce: true,
 		};
-	},
-	methods: {
-		edit(event){
-			this.editEvent({
-				...event,
-				_id: this.event._id
-			});
-			this.display = false;
-		},
-		confirmToDeleteEvent() {
-			if(this.needConfirmDelete){
-				this.needConfirmDeleteOnce = true;
-				this.needConfirmDelete = false;
-				return;
-			}
-			this.removeEvent(this.event);
-			this.display = false;
-		},
-		confirmToDeleteEventOnce(){
-			if(this.needConfirmDeleteOnce){
-				this.needConfirmDeleteOnce = false;
-				this.needConfirmDelete = true;
-				return;
-			}
-
-			this.removeCurrentEvent(this.event);
-			this.display = false;
-		}
 	},
 	computed: {
 		eventName() {
@@ -170,21 +141,50 @@ export default {
 			if(!this.event?.exclude) return null;
 			if(this.event.exclude.length == 0) return null;
 			return this.event.exclude.map(d => moment(d).format('DD.MM.YYYY'));
+		},
+
+		displayProxy: {
+			set(value){
+				this.$emit('update:display', value);
+			},
+			get(){
+				return this.display;
+			},
+		},
+	},
+	methods: {
+		edit(event){
+			this.editEvent({
+				...event,
+				_id: this.event._id
+			});
+			this.close();
+		},
+		confirmToDeleteEvent() {
+			if(this.needConfirmDelete){
+				this.needConfirmDeleteOnce = true;
+				this.needConfirmDelete = false;
+				return;
+			}
+			this.removeEvent(this.event);
+			this.close();
+		},
+		confirmToDeleteEventOnce(){
+			if(this.needConfirmDeleteOnce){
+				this.needConfirmDeleteOnce = false;
+				this.needConfirmDelete = true;
+				return;
+			}
+
+			this.removeCurrentEvent(this.event);
+			this.close();
+		},
+
+		close(){
+			this.displayProxy = false;
 		}
 	},
 	watch: {
-		event(value, prevVal) {
-			if (
-				prevVal == null ||
-				JSON.stringify(value) != JSON.stringify(prevVal)
-			) {
-				requestAnimationFrame(() =>
-					requestAnimationFrame(() => {
-						this.display = true;
-					})
-				);
-			} else this.display = false;
-		},
 		display(){
 			if(!this.display){
 				this.needConfirmDelete = true;
