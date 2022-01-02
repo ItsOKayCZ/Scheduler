@@ -21,7 +21,7 @@
 		</v-toolbar>
 
 		<v-card-text>
-			<v-form v-model='isFormValid' @change='didChange = true' ref='form' class='mt-4' lazy-validation>
+			<v-form v-model='isFormValid' @change='didChange = true' ref='form' class='mt-4'>
 				<v-row>
 					<v-col cols='12'>
 						<v-text-field
