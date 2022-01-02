@@ -72,7 +72,7 @@
 					<v-icon>mdi-delete</v-icon>Delete
 				</v-btn>
 				
-				<div class='d-flex flex-column'>
+				<div v-else class='d-flex flex-column'>
 					<h4>Delete</h4>
 					<v-btn-toggle dense>
 						<v-btn @click='confirmToDeleteEventOnce' :color='needConfirmDeleteOnce ? "primary" : "red"'>
