@@ -27,5 +27,6 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/scheduler-docker:lastest
+          cache: enabled
           cache-from: type=regisry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/scheduler-docker:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/scheduler-docker:buildcache,mode=max
