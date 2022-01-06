@@ -2,7 +2,9 @@ const app = require('express')();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/scheduler', function(err){
+const hostDB = process.env.DB_HOST || 'localhost';
+
+mongoose.connect(`mongodb://${hostDB}:27017/scheduler`, function(err){
 	if(err)
 		console.log(err);
 });

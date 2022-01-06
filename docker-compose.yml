@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+ scheduler:
+  image: scheduler-docker
+  ports:
+   - 3000:3000
+  working_dir: /app
+  environment:
+   DB_HOST: mongodb
+ 
+ mongodb:
+  image: mongo:4.4.10
+  volumes:
+   - scheduler-mongodb-data:/var/lib/mongodb
+  ports:
+   - 27017:27017
+
+volumes:
+ scheduler-mongodb-data:

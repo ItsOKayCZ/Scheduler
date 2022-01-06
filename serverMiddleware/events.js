@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 
 const moment = require('moment');
 
-mongoose.connect('mongodb://localhost:27017/scheduler', function(err){
+const hostDB = process.env.DB_HOST || 'localhost';
+mongoose.connect(`mongodb://${hostDB}:27017/scheduler`, function(err){
 	if(err)
 		console.log(err);
 });
