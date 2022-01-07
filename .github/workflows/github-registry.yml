@@ -12,6 +12,9 @@ jobs:
       - 
         name: Checkout
         uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
       -       
         name: Set up Docker Buildx
         id: buildx
@@ -40,7 +43,7 @@ jobs:
         with:
           context: ./ 
           file: ./Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
+          platforms: linux/arm64
           push: true
           tags: ghcr.io/itsokaycz/scheduler-docker:latest
           cache-from: type=local,src=/tmp/.buildx-cache
