@@ -9,7 +9,7 @@ services:
   environment:
    DB_HOST: mongodb
    authPath: ${SCHEDULER_AUTH_PATH}
-   authCooke: ${SCHEDULER_AUTH_COOKIE}
+   authCookie: ${SCHEDULER_AUTH_COOKIE}
  
  mongodb:
   image: mongo:4.4.10
