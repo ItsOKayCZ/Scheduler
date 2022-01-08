@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
  scheduler:
-  image: scheduler-docker
+  image: itsokaycz/scheduler-docker
   ports:
    - 3000:3000
   working_dir: /app
