@@ -13,8 +13,6 @@ services:
   image: mongo:4.4.10
   volumes:
    - scheduler-mongodb-data:/var/lib/mongodb
-  ports:
-   - 27017:27017
 
 volumes:
  scheduler-mongodb-data:
