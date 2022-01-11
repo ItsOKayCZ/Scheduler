@@ -35,16 +35,16 @@
 				/>
 			</v-dialog>
 
-			<v-btn icon @click="$refs.calendar.prev()">
+			<v-btn icon @click="calendarDOM.prev()">
 				<v-icon>mdi-chevron-left</v-icon>
 			</v-btn>
-			<v-btn icon @click="$refs.calendar.next()">
+			<v-btn icon @click="calendarDOM.next()">
 				<v-icon>mdi-chevron-right</v-icon>
 			</v-btn>
 		</v-toolbar>
 
 		<div class="calendarContainer">
-			<!-- <v-calendar
+			<v-calendar
 				ref="calendar"
 				v-model="calendarDate"
 				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
@@ -52,6 +52,7 @@
 				mode="column"
 				:events='events'
 				@click:event="selectEvent"
+				@click:date='selectDay'
 			>
 				<template v-slot:event="data">
 					<v-sheet
@@ -68,36 +69,13 @@
 						{{ data.eventParsed.end.time }}
 					</v-sheet>
 				</template>
-			</v-calendar>
 
-			<event-menu
-				:event.sync="selectedEvent"
-				:activator="selectedEventDOM"
-			></event-menu> -->
-
-			<v-calendar
-				ref="calendar"
-				v-model="calendarDate"
-				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
-				:type="viewType"
-				mode="column"
-				:events='events'
-				@click:event="selectEvent"
-			>
-				<template v-slot:event="data">
-					<v-sheet
-						class="pl-1 eventCard"
-						:class="{
-							blackText: isContrastingColor(data.event.color)
-						}"
-						:color="data.event.color"
-						event.width="100%"
-						height="100%"
-					>
-						<h3>{{ data.event.name }}</h3>
-						{{ data.eventParsed.start.time }} -
-						{{ data.eventParsed.end.time }}
-					</v-sheet>
+				<template v-slot:day-body="{ date, week }">
+					<div
+						class='currentTime'
+						:class='{ first: date === week[0].date }'
+						:style="{ top: nowY }"
+					></div>
 				</template>
 			</v-calendar>
 
@@ -158,7 +136,14 @@ export default {
 		selectedEvent: null,
 		selectedEventDOM: null,
 		eventMenuDisplay: false,
+
+		ready: false,
 	}),
+	mounted(){
+		this.ready = true;
+		this.scrollToTime();
+		this.updateTime();
+	},
 	computed: {
 		calendarDateMoment(){
 			return moment(this.calendarDate, 'YYYY-MM-DD');
@@ -196,8 +181,32 @@ export default {
 		removingEvents(){
 			return this.$store.state.events.removing;
 		},
+
+		calendarDOM(){
+			return this.ready ? this.$refs.calendar : null;
+		},
+		nowY(){
+			if(!this.calendarDOM)
+				return '-10px';
+
+			return this.calendarDOM.timeToY(this.calendarDOM.times.now) + 'px';
+		},
 	},
 	methods: {
+		// Source: https://vuetifyjs.com/en/components/calendars/#day-body
+		getCurrentTime(){
+			return this.calendarDOM ? this.calendarDOM.times.now.hour * 60 + this.calendarDOM.times.now.minute : 0;
+		},
+		scrollToTime(){
+			const time = this.getCurrentTime();
+			const first = Math.max(0, time - (time % 30) - 30);
+
+			this.calendarDOM.scrollToTime(first);
+		},
+		updateTime(){
+			setInterval(() => this.calendarDOM.updateTimes(), 60 * 1000);
+		},
+
 		selectEvent({ nativeEvent, event }) {
 			const open = () => {
 				this.selectedEvent = event;
@@ -214,6 +223,16 @@ export default {
 
 			nativeEvent.stopPropagation();
 		},
+		selectDay({ day, month, year }){
+			console.log(`${day}.${month}.${year}`);
+
+			if(this.viewType == 'month')
+				this.viewType = 'week';
+			else if(this.viewType == 'week')
+				this.viewType = 'day'
+			else
+				this.viewType = 'week';
+		}
 	},
 };
 </script>
@@ -233,6 +252,27 @@ export default {
 .blackText {
 	color: black !important;
 }
+
+.currentTime{
+	height: 2px;
+	background-color: #ea4335;
+	position: absolute;
+	left: -1px;
+	right: 0;
+	pointer-events: none;
+
+}
+.currentTime.first::before {
+	content: '';
+	position: absolute;
+	background-color: #ea4335;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	margin-top: -5px;
+	margin-left: -6.5px;
+}
+
 
 @media screen and (max-width: 700px) {
 	.v-calendar-daily_head-day-label .v-btn {
