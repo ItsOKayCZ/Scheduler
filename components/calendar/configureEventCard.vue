@@ -1,5 +1,10 @@
 <template>
-	<v-card>
+	<v-card
+		:style='{
+			transition: "opacity 0.2s",
+			opacity: preview ? 0.2 : 1
+		}'
+	>
 		<v-toolbar color='primary'>
 			<v-btn icon @click='close'>
 				<v-icon>mdi-close</v-icon>
@@ -11,6 +16,9 @@
 			<v-spacer></v-spacer>
 
 			<v-toolbar-items>
+				<v-btn text @mousedown='togglePreview(true)' @mouseup='togglePreview(false)'>
+					<v-icon>mdi-eye</v-icon>
+				</v-btn>
 				<v-btn v-if='edit' text @click='editEvent' :disabled='!isFormValid'>
 					<v-icon>mdi-content-save-edit</v-icon>Edit
 				</v-btn>
@@ -212,6 +220,8 @@ export default{
 			isFormValid: false,
 			didChange: false,
 			repeatAfterErrorMessages: [],
+
+			preview: false,
 		}
 	},
 	created(){
@@ -260,6 +270,12 @@ export default{
 		},
 	},
 	methods: {
+		togglePreview(state=null){
+			if(!state)
+				this.preview = !this.preview;
+			else
+				this.preview = state;
+		},
 		close(){
 			this.$emit('update:display', false);
 		},
