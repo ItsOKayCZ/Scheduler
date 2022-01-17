@@ -13,34 +13,55 @@
 				></v-skeleton-loader>
 				<v-row v-else>
 					<v-col
-						v-for='(panel, index) in panels'
-						:key='index'
+						v-for='(panel, panelIndex) in panels'
+						:key='panelIndex'
 						:cols='cols'
 					>
 						<v-card
 							class='card mb-4'
 							color='grey darken-4'
-							:height='!openedPanels.includes(index) ? 64: ""'
+							:height='!openedPanels.includes(panelIndex) ? 64: ""'
 						>
-							<v-card-title class='card-title' @click='toggleCard(index)'>
+							<v-card-title class='card-title' @click='toggleCard(panelIndex)'>
 								{{ panel.title }}
 
 								<v-spacer></v-spacer>
 
 								<v-btn icon>
-									<v-icon v-show="openedPanels.includes(index)">mdi-chevron-down</v-icon>
-									<v-icon v-show="!openedPanels.includes(index)">mdi-chevron-up</v-icon>
+									<v-icon v-show="openedPanels.includes(panelIndex)">mdi-chevron-down</v-icon>
+									<v-icon v-show="!openedPanels.includes(panelIndex)">mdi-chevron-up</v-icon>
 								</v-btn>
 							</v-card-title>
 
 							<v-divider></v-divider>
 
-							<v-card-text>
+							<v-card-text class='d-flex'>
 								<VueApexCharts
-									:type="panel.chartOptions.type"
-									:options="panel.chartOptions"
-									:series="panel.series"
+									ref='chart'
+
+									:type="panelsWithHiddenSeries[panelIndex].chartOptions.type"
+									:options="panelsWithHiddenSeries[panelIndex].chartOptions"
+									:series="panelsWithHiddenSeries[panelIndex].series"
 								></VueApexCharts>
+
+								<div v-if='panel.customLegend'>
+									<div
+										v-for='(label, index) in panel.chartOptions.labels'
+										:key='index'
+
+										class='chartLegend'
+										:class='{
+											hidden: isSeriesHidden(label, panelIndex)
+										}'
+
+										@click='toggleSeries(label, panelIndex)'
+									>
+										<div class='legendIcon'
+											:style='{ "background-color": panel.chartOptions.colors[index] }'
+										></div>
+										<span>{{ label }}</span>
+									</div>
+								</div>
 							</v-card-text>
 						</v-card>
 					</v-col>
@@ -53,6 +74,7 @@
 
 <script>
 import * as moment from "moment";
+import clone from 'just-clone';
 
 import Events from '~/plugins/mixins/Events';
 
@@ -67,6 +89,7 @@ export default {
 	data() {
 		return {
 			openedPanels: [],
+			hiddenSeries: [],
 
 			defaultChartOptions: {
 				theme: {
@@ -96,8 +119,35 @@ export default {
 					title: "Time spent",
 					chartOptions: this.timeSpentChartOptions,
 					series: this.timeSpentChartSeries,
+					customLegend: true,
 				},
 			];
+		},
+		panelsWithHiddenSeries(){
+			const panels = clone(this.panels);
+
+			for(const panelIndex in panels){
+				const panel = panels[panelIndex];
+
+				const labels = [];
+				const colors = [];
+				const series = [];
+				for(let i in panel.chartOptions.labels){
+					const label = panel.chartOptions.labels[i];
+					if(this.hiddenSeries?.[panelIndex]?.[label])
+						continue;
+
+					labels.push(panel.chartOptions.labels[i]);
+					colors.push(panel.chartOptions.colors[i]);
+					series.push(panel.series[i]);
+				}
+
+				panels[panelIndex].chartOptions.labels = labels;
+				panels[panelIndex].chartOptions.colors = colors;
+				panels[panelIndex].series = series;
+			}
+
+			return panels;
 		},
 		timeSpentChartOptions() {
 			return {
@@ -111,6 +161,9 @@ export default {
 
 				type: "pie",
 
+				legend: {
+					show: false,
+				},
 
 				dataLabels: {
 					formatter: (val, opts) => {
@@ -196,6 +249,15 @@ export default {
 				this.openedPanels = this.openedPanels.filter((p) => p != index);
 			else this.openedPanels.push(index);
 		},
+		toggleSeries(label, index){
+			if(!this.hiddenSeries[index])
+				this.$set(this.hiddenSeries, index, {});
+			
+			this.$set(this.hiddenSeries[index], label, !this.hiddenSeries[index][label]);
+		},
+		isSeriesHidden(label, index){
+			return this.hiddenSeries?.[index]?.[label];
+		},
 
 		setColSize(){
 			if(process.browser){
@@ -220,6 +282,35 @@ export default {
 	.card-title {
 		cursor: pointer;
 		user-select: none;
+	}
+}
+
+.chartLegend{
+	color: white;
+
+	display: flex;
+	align-items: center;
+	margin-bottom: 4px;
+
+	user-select: none;
+
+	.legendIcon{
+		margin-right: 4px;
+
+		border-radius: 50%;
+		
+		width: 12px;
+		height: 12px;
+	}
+
+	&.hidden{
+		opacity: 0.7;
+	}
+
+	transition: opacity 0.1s;
+	&:hover{
+		cursor: pointer;
+		opacity: 0.7;
 	}
 }
 </style>
